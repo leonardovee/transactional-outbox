@@ -15,12 +15,3 @@ create table orders (
 );
 
 create index orders_aggregate_id on orders(aggregate_id);
-
-create table outbox (
-    id varchar(36) primary key,
-    aggregate_id varchar(36) not null,
-    aggregate_type varchar(255) not null,
-    type varchar(255) not null,
-    payload jsonb not null,
-    created_at timestamp default now()
-);

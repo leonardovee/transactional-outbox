@@ -8,6 +8,7 @@ import (
 	"github.com/jackc/pgx/v5"
 	"leonardovee.dev/microservices-patterns/transactional-outbox/internal/handler"
 	"leonardovee.dev/microservices-patterns/transactional-outbox/internal/order"
+	"leonardovee.dev/microservices-patterns/transactional-outbox/internal/outbox"
 	"leonardovee.dev/microservices-patterns/transactional-outbox/internal/service"
 )
 
@@ -20,8 +21,14 @@ func main() {
 	}
 	defer conn.Close(ctx)
 
-	queries := order.New(conn)
-	service := service.New(queries)
+	err = conn.Ping(ctx)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	orderQueries := order.New(conn)
+	outboxQueries := outbox.New(conn)
+	service := service.New(conn, orderQueries, outboxQueries)
 	handler := handler.New(service)
 	startServer(handler)
 }

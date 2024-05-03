@@ -18,6 +18,8 @@ func New(service *service.Service) *Handler {
 }
 
 func (h *Handler) Command(c *gin.Context) {
+	ctx := c.Request.Context()
+
 	var request struct {
 		Command     string  `json:"Command"`
 		AggregateID *string `json:"AggregateID"`
@@ -28,7 +30,7 @@ func (h *Handler) Command(c *gin.Context) {
 		return
 	}
 
-	o, err := h.service.Execute(c.Request.Context(), &service.Command{
+	o, err := h.service.Execute(ctx, &service.Command{
 		Command:     request.Command,
 		AggregateID: request.AggregateID,
 		Total:       request.Total,
@@ -38,5 +40,5 @@ func (h *Handler) Command(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusCreated, o)
+	c.JSON(http.StatusAccepted, o)
 }
