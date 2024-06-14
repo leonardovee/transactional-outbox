@@ -63,3 +63,12 @@ type Order struct {
 	Total       int32
 	CreatedAt   pgtype.Timestamp
 }
+
+type Outbox struct {
+	ID            string
+	AggregateID   string
+	AggregateType string
+	Type          string
+	Payload       []byte
+	CreatedAt     pgtype.Timestamp
+}

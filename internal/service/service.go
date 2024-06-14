@@ -13,8 +13,8 @@ import (
 )
 
 type Command struct {
-	Command     string
 	AggregateID *string
+	Command     string
 	Total       *int
 }
 

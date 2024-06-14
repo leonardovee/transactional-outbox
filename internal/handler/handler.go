@@ -21,8 +21,8 @@ func (h *Handler) Command(c *gin.Context) {
 	ctx := c.Request.Context()
 
 	var request struct {
-		Command     string  `json:"Command"`
 		AggregateID *string `json:"AggregateID"`
+		Command     string  `json:"Command"`
 		Total       *int    `json:"Total"`
 	}
 	if err := c.ShouldBindJSON(&request); err != nil {

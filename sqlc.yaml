@@ -1,16 +1,16 @@
 version: "2"
 sql:
   - engine: "postgresql"
-    queries: "sql/order/query.sql"
-    schema: "sql/order/schema.sql"
+    queries: "internal/order/query.sql"
+    schema: "schema.sql"
     gen:
       go:
         package: "order"
         out: "internal/order"
         sql_package: "pgx/v5"
   - engine: "postgresql"
-    queries: "sql/outbox/query.sql"
-    schema: "sql/outbox/schema.sql"
+    queries: "internal/outbox/query.sql"
+    schema: "schema.sql"
     gen:
       go:
         package: "outbox"
