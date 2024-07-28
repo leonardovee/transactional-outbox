@@ -11,49 +11,24 @@ import (
 
 const createOrder = `-- name: CreateOrder :one
 INSERT INTO orders (
-    id, aggregate_id, status, total
+    id, status, total
 ) VALUES (
-    $1, $2, $3, $4
+    $1, $2, $3
 )
-RETURNING id, aggregate_id, status, total, created_at
+RETURNING id, status, total, created_at
 `
 
 type CreateOrderParams struct {
-	ID          string
-	AggregateID string
-	Status      NullOrderStatus
-	Total       int32
+	ID     string
+	Status NullOrderStatus
+	Total  int32
 }
 
 func (q *Queries) CreateOrder(ctx context.Context, arg CreateOrderParams) (Order, error) {
-	row := q.db.QueryRow(ctx, createOrder,
-		arg.ID,
-		arg.AggregateID,
-		arg.Status,
-		arg.Total,
-	)
+	row := q.db.QueryRow(ctx, createOrder, arg.ID, arg.Status, arg.Total)
 	var i Order
 	err := row.Scan(
 		&i.ID,
-		&i.AggregateID,
-		&i.Status,
-		&i.Total,
-		&i.CreatedAt,
-	)
-	return i, err
-}
-
-const getAggregate = `-- name: GetAggregate :one
-SELECT id, aggregate_id, status, total, created_at FROM orders 
-WHERE aggregate_id = $1 LIMIT 1
-`
-
-func (q *Queries) GetAggregate(ctx context.Context, aggregateID string) (Order, error) {
-	row := q.db.QueryRow(ctx, getAggregate, aggregateID)
-	var i Order
-	err := row.Scan(
-		&i.ID,
-		&i.AggregateID,
 		&i.Status,
 		&i.Total,
 		&i.CreatedAt,
@@ -62,7 +37,7 @@ func (q *Queries) GetAggregate(ctx context.Context, aggregateID string) (Order, 
 }
 
 const getOrder = `-- name: GetOrder :one
-SELECT id, aggregate_id, status, total, created_at FROM orders 
+SELECT id, status, total, created_at FROM orders 
 WHERE id = $1 LIMIT 1
 `
 
@@ -71,7 +46,6 @@ func (q *Queries) GetOrder(ctx context.Context, id string) (Order, error) {
 	var i Order
 	err := row.Scan(
 		&i.ID,
-		&i.AggregateID,
 		&i.Status,
 		&i.Total,
 		&i.CreatedAt,
@@ -80,7 +54,7 @@ func (q *Queries) GetOrder(ctx context.Context, id string) (Order, error) {
 }
 
 const listOrders = `-- name: ListOrders :many
-SELECT id, aggregate_id, status, total, created_at FROM orders
+SELECT id, status, total, created_at FROM orders
 ORDER BY created_at
 `
 
@@ -95,7 +69,6 @@ func (q *Queries) ListOrders(ctx context.Context) ([]Order, error) {
 		var i Order
 		if err := rows.Scan(
 			&i.ID,
-			&i.AggregateID,
 			&i.Status,
 			&i.Total,
 			&i.CreatedAt,

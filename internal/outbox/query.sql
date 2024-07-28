@@ -16,8 +16,7 @@ INSERT INTO outbox (
 )
 RETURNING *;
 
--- name: DeleteOutbox :one
+-- name: DeleteOutbox :exec
 DELETE FROM outbox
-WHERE id = $1
-RETURNING *;
+WHERE id = $1;
 

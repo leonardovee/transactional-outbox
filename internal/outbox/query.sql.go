@@ -46,24 +46,14 @@ func (q *Queries) CreateOutbox(ctx context.Context, arg CreateOutboxParams) (Out
 	return i, err
 }
 
-const deleteOutbox = `-- name: DeleteOutbox :one
+const deleteOutbox = `-- name: DeleteOutbox :exec
 DELETE FROM outbox
 WHERE id = $1
-RETURNING id, aggregate_id, aggregate_type, type, payload, created_at
 `
 
-func (q *Queries) DeleteOutbox(ctx context.Context, id string) (Outbox, error) {
-	row := q.db.QueryRow(ctx, deleteOutbox, id)
-	var i Outbox
-	err := row.Scan(
-		&i.ID,
-		&i.AggregateID,
-		&i.AggregateType,
-		&i.Type,
-		&i.Payload,
-		&i.CreatedAt,
-	)
-	return i, err
+func (q *Queries) DeleteOutbox(ctx context.Context, id string) error {
+	_, err := q.db.Exec(ctx, deleteOutbox, id)
+	return err
 }
 
 const getOutbox = `-- name: GetOutbox :one

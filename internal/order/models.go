@@ -57,11 +57,10 @@ func (ns NullOrderStatus) Value() (driver.Value, error) {
 }
 
 type Order struct {
-	ID          string
-	AggregateID string
-	Status      NullOrderStatus
-	Total       int32
-	CreatedAt   pgtype.Timestamp
+	ID        string
+	Status    NullOrderStatus
+	Total     int32
+	CreatedAt pgtype.Timestamp
 }
 
 type Outbox struct {

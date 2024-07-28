@@ -7,7 +7,7 @@ import (
 	"log"
 
 	"github.com/google/uuid"
-	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"leonardovee.dev/microservices-patterns/transactional-outbox/internal/order"
 	"leonardovee.dev/microservices-patterns/transactional-outbox/internal/outbox"
 )
@@ -19,12 +19,12 @@ type Command struct {
 }
 
 type Service struct {
-	db            *pgx.Conn
+	db            *pgxpool.Pool
 	orderQueries  *order.Queries
 	outboxQueries *outbox.Queries
 }
 
-func New(db *pgx.Conn, orderQueries *order.Queries, outboxQueries *outbox.Queries) *Service {
+func New(db *pgxpool.Pool, orderQueries *order.Queries, outboxQueries *outbox.Queries) *Service {
 	return &Service{
 		db,
 		orderQueries,
@@ -59,8 +59,7 @@ func (s *Service) CreateOrder(ctx context.Context, total int32) (*order.Order, e
 
 	id := uuid.New().String()
 	o, err := qtx.CreateOrder(ctx, order.CreateOrderParams{
-		ID:          id,
-		AggregateID: id,
+		ID: id,
 		Status: order.NullOrderStatus(order.NullOrderStatus{
 			OrderStatus: "created",
 			Valid:       true,
@@ -107,8 +106,7 @@ func (s *Service) UpdateAggregate(ctx context.Context, aggregateID string, statu
 	qtx := s.orderQueries.WithTx(tx)
 
 	o, err := qtx.CreateOrder(ctx, order.CreateOrderParams{
-		ID:          uuid.New().String(),
-		AggregateID: aggregateID,
+		ID: uuid.New().String(),
 		Status: order.NullOrderStatus(order.NullOrderStatus{
 			OrderStatus: status,
 			Valid:       true,
@@ -161,7 +159,7 @@ func (s *Service) ProcessOutbox(ctx context.Context) error {
 	}
 
 	for _, o := range outboxes {
-		err := s.processOutboxItem(ctx, o)
+		err := s.processOutboxItem(ctx, qtx, o)
 		if err != nil {
 			tx.Rollback(ctx)
 			return err
@@ -176,10 +174,12 @@ func (s *Service) ProcessOutbox(ctx context.Context) error {
 	return nil
 }
 
-func (s *Service) processOutboxItem(ctx context.Context, o outbox.Outbox) error {
-	log.Printf("Processing outbox item: %v", o)
+func (s *Service) processOutboxItem(ctx context.Context, qtx *outbox.Queries, o outbox.Outbox) error {
+	log.Printf("Processing outbox item: %v", o.AggregateID)
 
-	_, err := s.outboxQueries.DeleteOutbox(ctx, o.ID)
+	// Do something in here with the value...
+
+	err := qtx.DeleteOutbox(ctx, o.ID)
 	if err != nil {
 		return err
 	}
